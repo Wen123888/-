@@ -1,0 +1,122 @@
+C51 COMPILER V9.54   MAIN                                                                  03/13/2025 22:54:06 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil C51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\mai
+                    -n.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX51.H>
+   2          #include <INTRINS.H>
+   3          
+   4          #define LED P0  //宏定义P0I/O口为LED
+   5          #define LED_Select P2 //宏定义P2I/O口为LED_Select P2  
+   6          
+   7          sbit Key=P1^7;//定义P1^7I/O口为Key
+   8          
+   9          unsigned int i=0,j=0;
+  10          
+  11          unsigned char Sign=0; //定义标志位，判断按键是否按下
+  12          
+  13          unsigned char Position[] = {  //位选信号数组
+  14            0x01, //  1：0000 0001
+  15            0x02, //  2：0000 0010
+  16            0x04, //  3：0000 0100
+  17            0x08, //  4：0000 1000
+  18            0x10, //  5：0001 0000
+  19            0x20  //  6：0010 0000
+  20          };
+  21          unsigned char LED_Num[] = { //储存段选信号0~9的数字的数组
+  22            0x3F, // 0: 0011 1111
+  23            0x06, // 1: 0000 0110
+  24            0x5B, // 2: 0101 1011
+  25            0x4F, // 3: 0100 1111
+  26            0x66, // 4: 0110 0110
+  27            0x6D, // 5: 0110 1101
+  28            0x7D, // 6: 0111 1101
+  29            0x07, // 7: 0000 0111
+  30            0x7F, // 8: 0111 1111
+  31            0x6F  // 9: 0110 1111
+  32          };
+  33          
+  34          unsigned char LED_Let[] = { //储存段选信号H~O的字母的数组
+  35            0x76, // H：0111 0110
+  36            0x79, // E：0111 1001
+  37            0x38, // L：0011 1000
+  38            0x38, // L：0011 1000
+  39            0x3f  // O：0011 1111
+  40          };
+  41          void Delay(unsigned int ms)//@12MHZ 带参延时函数
+  42          {
+  43   1          unsigned int i, j;
+  44   1          for (i = 0; i < ms; i++) 
+  45   1        {
+  46   2              for (j = 0; j < 120; j++);
+  47   2        }
+  48   1      }
+  49          
+  50          void LED_Number() //数码管显示数字函数
+  51          {
+  52   1        for(i=0;i<6;i++)//循环扫描位选引脚
+  53   1        {
+  54   2          //LED=0xff; //消影
+C51 COMPILER V9.54   MAIN                                                                  03/13/2025 22:54:06 PAGE 2   
+
+  55   2          LED_Select=~Position[i];  //将位选引脚进行移位
+  56   2          LED=LED_Num[i+1]; //赋值段选引脚信号，使数码管显数字
+  57   2          Delay(10);  //延时10ms，增加LED灯闪亮时间占比，增加亮度
+  58   2        }
+  59   1      }
+  60          
+  61          void LED_Letter() //数码管显示字母函数
+  62          {
+  63   1        for(j=0;j<5;j++)  //循环扫描位选引脚
+  64   1        {
+  65   2          //LED=0xff; //消影
+  66   2          LED_Select=~Position[j];  //将位选引脚进行移位
+  67   2          LED=LED_Let[j]; //赋值段选引脚信号，使数码管显字母
+  68   2          Delay(10);  //延时10ms，增加LED灯闪亮时间占比，增加亮度
+  69   2        }
+  70   1      }
+  71          
+  72          void main() //主函数
+  73          {
+  74   1          LED_Number(); //使数码管上电即显示数字
+  75   1          while(1)  //无限循环
+  76   1          {
+  77   2              if(!Key)  //代码检测按键是否按下
+  78   2              {
+  79   3                Delay(20);  //延时20ms，消抖，稳定程序
+  80   3                Sign=!Sign; //当每次按键被按下后，将标志位取反
+  81   3                while(!Key)//判断按键是否抬起
+  82   3                {
+  83   4                  switch(Sign)//使数码管在按键始终处于被按下的状态仍然可以显示数字或字母  
+  84   4                  {
+  85   5                    case 0:LED_Number();break;  
+  86   5                    case 1:LED_Letter();break;  
+  87   5                  }
+  88   4                }
+  89   3              }
+  90   2              switch(Sign)  //选择函数，通过标志位判断数码管应该显示数字或字母
+  91   2                {
+  92   3                  case 0:LED_Number();break;  //当标志位为最初值或者是再次取反值，数码管显示数字
+  93   3                  case 1:LED_Letter();break;  //当标志位为取反值，数码管显示字母
+  94   3                }
+  95   2          }
+  96   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    180    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     26    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
